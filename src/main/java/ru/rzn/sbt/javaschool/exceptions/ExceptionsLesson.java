@@ -224,7 +224,6 @@ public class ExceptionsLesson {
             try {
                 data = session.getData();
             } catch (IOException ex) {
-                data = null;
                 log.log(ex.getMessage());
             }
         } catch (Exception ex) {
@@ -253,13 +252,13 @@ public class ExceptionsLesson {
             try {
                 session = connection.createSession();
                 data = session.getData();
-            }  finally {
+            } catch(IOException ex) {
+                log.log(ex.getMessage());
+            } finally {
                 if (null != session) session.close();
                 connection.close();
             }
-        }  catch(IOException ex) {
-            log.log(ex.getMessage());
-        }catch (Exception ex) {
+        }  catch (Exception ex) {
             log.log(ex.getMessage());
         }
         return data;
@@ -279,11 +278,7 @@ public class ExceptionsLesson {
                 data = session.getData();
             } catch (IOException ex) {
                 log.log(ex.getMessage());
-            } catch (Exception ex) {
-                log.log(ex.getMessage());
             }
-        } catch (IOException ex) {
-            log.log(ex.getMessage());
         } catch (Exception ex) {
             log.log(ex.getMessage());
         }
