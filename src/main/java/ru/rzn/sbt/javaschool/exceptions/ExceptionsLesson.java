@@ -19,12 +19,10 @@ public class ExceptionsLesson {
      * методом {@link Logger#log(String)}.
      */
     public void logException(SomeService service, Logger log) {
-        try
-        {
+        try {
             service.doSomething();
         }
-        catch (java.io.IOException ex)
-        {
+        catch (java.io.IOException ex) {
             log.log(ex.getMessage());
         }
     }
@@ -156,7 +154,6 @@ public class ExceptionsLesson {
             this.errorCode = errorCode;
         }
 
-
         public void setErrorCode(int errorCode) {
             this.errorCode = errorCode;
         }
@@ -180,7 +177,6 @@ public class ExceptionsLesson {
         try {
             caller.length();
         } catch (Exception ex) {
-            StackTraceElement[] test = ex.getStackTrace();
             caller = ex.getStackTrace()[1].getMethodName();
         }
         return caller;
@@ -199,26 +195,18 @@ public class ExceptionsLesson {
      */
     public String closeResource(OldConnection c, Logger log) {
         String data = null;
-        OldSession session = null;
         try {
-            session = c.createSession();
+            OldSession session = c.createSession();
             try {
                 data = session.getData();
             } catch (IOException ex) {
-                data = null;
-                log.log(ex.getMessage());
-            } catch (Exception ex) {
                 log.log(ex.getMessage());
             } finally {
                 session.close();
             }
-            c.close();
-        } catch (IOException ex) {
-            log.log(ex.getMessage());
         } catch (Exception ex) {
             log.log(ex.getMessage());
         }
-
         return data;
     }
 
@@ -238,13 +226,9 @@ public class ExceptionsLesson {
             } catch (IOException ex) {
                 data = null;
                 log.log(ex.getMessage());
-            } catch (Exception ex) {
-                log.log(ex.getMessage());
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             log.log(ex.getMessage());
-        }  catch (Exception ex) {
-
         }
         return data;
     }
@@ -263,28 +247,20 @@ public class ExceptionsLesson {
      */
     public String closeEverything(OldConnectionFactory cf, Logger log) {
         String data = null;
+        OldSession session = null;
         try {
             OldConnection connection = cf.createConnection();
             try {
-                OldSession session = connection.createSession();
-                try {
-                    data = session.getData();
-                } catch (IOException ex) {
-                    data = null;
-                    log.log(ex.getMessage());
-                }   finally {
-                    session.close();
-                }
-
-            } catch (IOException ex) {
-                log.log(ex.getMessage());
-            } finally {
+                session = connection.createSession();
+                data = session.getData();
+            }  finally {
+                if (null != session) session.close();
                 connection.close();
             }
-        } catch (IOException ex) {
-          log.log(ex.getMessage());
-        } catch (Exception ex) {
-
+        }  catch(IOException ex) {
+            log.log(ex.getMessage());
+        }catch (Exception ex) {
+            log.log(ex.getMessage());
         }
         return data;
     }
@@ -302,7 +278,6 @@ public class ExceptionsLesson {
             try (Session session = connection.createSession()) {
                 data = session.getData();
             } catch (IOException ex) {
-                data = null;
                 log.log(ex.getMessage());
             } catch (Exception ex) {
                 log.log(ex.getMessage());
@@ -312,7 +287,6 @@ public class ExceptionsLesson {
         } catch (Exception ex) {
             log.log(ex.getMessage());
         }
-
         return data;
     }
 
