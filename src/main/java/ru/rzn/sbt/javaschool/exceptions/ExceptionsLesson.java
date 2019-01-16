@@ -21,8 +21,7 @@ public class ExceptionsLesson {
     public void logException(SomeService service, Logger log) {
         try {
             service.doSomething();
-        }
-        catch (java.io.IOException ex) {
+        } catch (java.io.IOException ex) {
             log.log(ex.getMessage());
         }
     }
