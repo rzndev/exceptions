@@ -220,12 +220,8 @@ public class ExceptionsLesson {
         String data = null;
 
         try (Session session = c.createSession()){
-            try {
-                data = session.getData();
-            } catch (IOException ex) {
-                log.log(ex.getMessage());
-            }
-        } catch (Exception ex) {
+            data = session.getData();
+        } catch (IOException ex) {
             log.log(ex.getMessage());
         }
         return data;
@@ -254,8 +250,17 @@ public class ExceptionsLesson {
             } catch(IOException ex) {
                 log.log(ex.getMessage());
             } finally {
-                if (null != session) session.close();
-                connection.close();
+                try {
+                    if (null != session) session.close();
+                } catch (Exception ex) {
+                    log.log(ex.getMessage());
+                }
+                try {
+                    connection.close();
+                } catch (Exception ex) {
+                    log.log(ex.getMessage());
+                }
+
             }
         }  catch (Exception ex) {
             log.log(ex.getMessage());
@@ -270,19 +275,35 @@ public class ExceptionsLesson {
      * {@link AutoCloseable}. ({@link ConnectionFactory}, {@link Connection}, {@link Session})<br />
      * Почувствуйте разницу :)
      */
+    //    public String autocloseEverything(ConnectionFactory cf, Logger log) {
+    //        String data = null;
+    //        try (Connection connection = cf.createConnection()) {
+    //            try (Session session = connection.createSession()) {
+    //                data = session.getData();
+    //            } catch (IOException ex) {
+    //                log.log(ex.getMessage());
+    //            }
+    //        } catch (Exception ex) {
+    //            log.log(ex.getMessage());
+    //        }
+    //        return data;
+    //    }
     public String autocloseEverything(ConnectionFactory cf, Logger log) {
         String data = null;
-        try (Connection connection = cf.createConnection()) {
-            try (Session session = connection.createSession()) {
-                data = session.getData();
-            } catch (IOException ex) {
-                log.log(ex.getMessage());
-            }
-        } catch (Exception ex) {
+        try (Connection connection = cf.createConnection();
+             Session session = connection.createSession()
+	     ) {
+	    data = session.getData();
+	} catch (IOException ex) {
+	    log.log(ex.getMessage());
+	} catch (Exception ex) {
+	    ex.getSuppressed();
             log.log(ex.getMessage());
         }
         return data;
     }
+
+
 
     /**
      * Упражнение 12. Hello Barbara.<br />
