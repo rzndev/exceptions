@@ -1,6 +1,5 @@
 package ru.rzn.sbt.javaschool.exceptions;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import ru.rzn.sbt.javaschool.exceptions.utils.*;
 
 import java.io.IOException;
@@ -39,10 +38,9 @@ public class ExceptionsLesson {
     public void closeConnection(SomeService service, Logger log) {
         try {
             service.doSomething();
-        } catch(java.io.IOException ex) {
+        } catch (java.io.IOException ex) {
             log.log(ex.getMessage());
-        }
-        finally {
+        } finally {
             service.closeConnection();
         }
     }
@@ -59,17 +57,20 @@ public class ExceptionsLesson {
         try {
             getStackTraceDeeper(service);
         } catch (Exception ex) {
-            for(StackTraceElement item : ex.getStackTrace()) {
+            for (StackTraceElement item : ex.getStackTrace()) {
                 log.log(item.toString());
             }
         }
     }
+
     private void getStackTraceDeeper(SomeService service) throws IOException {
         getStackTraceEvenDeeper(service);
     }
+
     private void getStackTraceEvenDeeper(SomeService service) throws IOException {
         getStackTraceWeNeedToGoDeeper(service);
     }
+
     private void getStackTraceWeNeedToGoDeeper(SomeService service) throws IOException {
         service.doSomething();
     }
@@ -80,11 +81,11 @@ public class ExceptionsLesson {
      * Вызовите у сервиса {@code service} метод {@link SomeService#showMeTheWay()} и обработайте исключения:<br />
      * <br />
      * 1. В случае, если пол определить не удаётся ( {@link ru.rzn.sbt.javaschool.exceptions.utils.ChildException} )
-     *      отправьте в лог сообщение {@link #UNKNOWN}<br />
+     * отправьте в лог сообщение {@link #UNKNOWN}<br />
      * 2. При возникновении {@link ru.rzn.sbt.javaschool.exceptions.utils.BoyException}
-     *      отправьте в лог сообщение {@link #RIGHT}<br />
+     * отправьте в лог сообщение {@link #RIGHT}<br />
      * 3. При возникновении {@link ru.rzn.sbt.javaschool.exceptions.utils.GirlException}
-     *      отправьте в лог сообщение {@link #LEFT}<br />
+     * отправьте в лог сообщение {@link #LEFT}<br />
      * 4. Другие исключения не обрабатывайте.<br />
      * <br />
      * Внимание! Это упражнение только для изучения синтаксиса языка. Можно включить его в раздел "вредные советы" -
@@ -101,7 +102,6 @@ public class ExceptionsLesson {
             log.log(UNKNOWN);
         }
     }
-
 
 
     public static final String LEFT = "Налево";
@@ -135,7 +135,7 @@ public class ExceptionsLesson {
      * 1. с именем {@code HelloWorldException}<br />
      * 2. c дополнительным целочисленным ({@code int}) свойством {@code ErrorCode}<br />
      * 3. с единственным публичным конструктором, принимающим сообщение и код ошибки
-     *     (два параметра в указанном порядке)<br />
+     * (два параметра в указанном порядке)<br />
      * <br />
      * В методе {@link #helloWorldException} выбросьте получившееся исключение
      * с кодом ошибки {@link #THROW_THE_WORLD_CODE} и с сообщением {@link #THROW_THE_WORLD_MSG}
@@ -194,17 +194,18 @@ public class ExceptionsLesson {
      */
     public String closeResource(OldConnection c, Logger log) {
         String data = null;
+        OldSession session = null;
         try {
-            OldSession session = c.createSession();
+            session = c.createSession();
+            data = session.getData();
+        } catch (IOException ex) {
+            log.log(ex.getMessage());
+        } finally {
             try {
-                data = session.getData();
+                if (session != null) session.close();
             } catch (IOException ex) {
                 log.log(ex.getMessage());
-            } finally {
-                session.close();
             }
-        } catch (Exception ex) {
-            log.log(ex.getMessage());
         }
         return data;
     }
@@ -218,8 +219,7 @@ public class ExceptionsLesson {
      */
     public String autocloseResource(Connection c, Logger log) {
         String data = null;
-
-        try (Session session = c.createSession()){
+        try (Session session = c.createSession()) {
             data = session.getData();
         } catch (IOException ex) {
             log.log(ex.getMessage());
@@ -239,31 +239,29 @@ public class ExceptionsLesson {
      * не должен выбрасывать проверяемых исключений. Если при запросе возникла ошибка ({@link IOException}),
      * верните {@code null}, а сообщение об ошибке запишите в лог.
      */
+
     public String closeEverything(OldConnectionFactory cf, Logger log) {
         String data = null;
         OldSession session = null;
+        OldConnection connection = null;
         try {
-            OldConnection connection = cf.createConnection();
-            try {
-                session = connection.createSession();
-                data = session.getData();
-            } catch(IOException ex) {
-                log.log(ex.getMessage());
-            } finally {
-                try {
-                    if (null != session) session.close();
-                } catch (Exception ex) {
-                    log.log(ex.getMessage());
-                }
-                try {
-                    connection.close();
-                } catch (Exception ex) {
-                    log.log(ex.getMessage());
-                }
-
-            }
-        }  catch (Exception ex) {
+            connection = cf.createConnection();
+            session = connection.createSession();
+            data = session.getData();
+        } catch (IOException ex) {
             log.log(ex.getMessage());
+        } finally {
+            try {
+                if (null != session) session.close();
+            } catch (Exception ex) {
+                log.log(ex.getMessage());
+            }
+            try {
+                if (null != connection) connection.close();
+            } catch (Exception ex) {
+                log.log(ex.getMessage());
+            }
+
         }
         return data;
     }
@@ -275,34 +273,20 @@ public class ExceptionsLesson {
      * {@link AutoCloseable}. ({@link ConnectionFactory}, {@link Connection}, {@link Session})<br />
      * Почувствуйте разницу :)
      */
-    //    public String autocloseEverything(ConnectionFactory cf, Logger log) {
-    //        String data = null;
-    //        try (Connection connection = cf.createConnection()) {
-    //            try (Session session = connection.createSession()) {
-    //                data = session.getData();
-    //            } catch (IOException ex) {
-    //                log.log(ex.getMessage());
-    //            }
-    //        } catch (Exception ex) {
-    //            log.log(ex.getMessage());
-    //        }
-    //        return data;
-    //    }
+
     public String autocloseEverything(ConnectionFactory cf, Logger log) {
         String data = null;
         try (Connection connection = cf.createConnection();
-             Session session = connection.createSession()
-	     ) {
-	    data = session.getData();
-	} catch (IOException ex) {
-	    log.log(ex.getMessage());
-	} catch (Exception ex) {
-	    ex.getSuppressed();
+             Session session = connection.createSession()) {
+            data = session.getData();
+        } catch (IOException ex) {
+            log.log(ex.getMessage());
+        } catch (Exception ex) {
+            ex.getSuppressed();
             log.log(ex.getMessage());
         }
         return data;
     }
-
 
 
     /**
